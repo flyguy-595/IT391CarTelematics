@@ -12,8 +12,6 @@ import com.amazonaws.mobileconnectors.iot.AWSIotMqttQos;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.iot.AWSIotClient;
-import com.amazonaws.services.iot.model.AttachPolicyRequest;
-import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateResult;
 
@@ -43,8 +41,9 @@ public class AWSConnection {
 
         //connects to AWS IoT
         String clientID = UUID.randomUUID().toString();
-        mqtt = new AWSIotMqttManager(clientID, "a29oyasplq5kn5-ats.iot.us-east-2.amazonaws.com ");
+        mqtt = new AWSIotMqttManager(clientID, "a29oyasplq5kn5-ats.iot.us-east-2.amazonaws.com");
         mqtt.setKeepAlive(10);
+        mqtt.setAutoReconnect(false);
 
         // IoT Client (for creation of certificate if needed)
         iotClient = new AWSIotClient(credentialsProvider);
@@ -65,6 +64,7 @@ public class AWSConnection {
                     // load keystore from file into memory to pass on connection
                     clientKeyStore = AWSIotKeystoreHelper.getIotKeystore(certificateId,
                             keystorePath, keystoreName, keystorePassword);
+                    subscribeToTopic();
                 } else {
                     Log.i(LOG_TAG, "Key/cert " + certificateId + " not found in keystore.");
                 }
@@ -111,23 +111,7 @@ public class AWSConnection {
                                 keystorePath, keystoreName, keystorePassword);
                         try {
                             if (clientKeyStore != null) {
-                                mqtt.connect(clientKeyStore, new AWSIotMqttClientStatusCallback() {
-                                    @Override
-                                    public void onStatusChanged(final AWSIotMqttClientStatus status,
-                                                                final Throwable throwable) {
-                                        Log.d(LOG_TAG, "Status = " + String.valueOf(status));
-                                        if (status == AWSIotMqttClientStatus.Connected) {
-                                            //subscribes to the data topic which is the topic the PI sends the data on
-                                            mqtt.subscribeToTopic("PiTelemetry/data", AWSIotMqttQos.QOS0, new AWSIotMqttNewMessageCallback() {
-                                                @Override
-                                                public void onMessageArrived(String topic, byte[] data) {
-                                                    String topicData = new String(data);
-                                                    updateData(topicData);
-                                                }
-                                            });
-                                        }
-                                    }
-                                });
+                                subscribeToTopic();
                             }
                         } catch (final Exception e) {
                             Log.e(LOG_TAG, "Connection error.", e);
@@ -147,5 +131,26 @@ public class AWSConnection {
     // used for updating the PiData variable inside the onMessageArrived method so AWSConnect and return the data
     private void updateData(String data){
         PiData = data;
+    }
+
+    //subscribe to topic
+    private void subscribeToTopic(){
+        mqtt.connect(clientKeyStore, new AWSIotMqttClientStatusCallback() {
+            @Override
+            public void onStatusChanged(final AWSIotMqttClientStatus status,
+                                        final Throwable throwable) {
+                Log.d(LOG_TAG, "Status = " + String.valueOf(status));
+                if (status == AWSIotMqttClientStatus.Connected) {
+                    //subscribes to the data topic which is the topic the PI sends the data on
+                    mqtt.subscribeToTopic("PiTelemetry/data", AWSIotMqttQos.QOS0, new AWSIotMqttNewMessageCallback() {
+                        @Override
+                        public void onMessageArrived(String topic, byte[] data) {
+                            String topicData = new String(data);
+                            updateData(topicData);
+                        }
+                    });
+                }
+            }
+        });
     }
 }
