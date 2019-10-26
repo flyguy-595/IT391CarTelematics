@@ -29,8 +29,15 @@ public class AWSConnection {
     private String keystorePassword;
     private String certificateId;
     private AWSIotMqttManager mqtt;
+    private MainActivity mainActivity;
+    private Context context;
 
-    public String AWSConnect(Context context) {
+    public AWSConnection(Context context){
+        mainActivity = (MainActivity) context;
+        this.context = context;
+    }
+
+    public void AWSConnect() {
 
         // Initialize the Amazon Cognito credentials provider
         CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
@@ -125,12 +132,18 @@ public class AWSConnection {
                 }
             }).start();
         }
-        return PiData;
     }
 
     // used for updating the PiData variable inside the onMessageArrived method so AWSConnect and return the data
     private void updateData(String data){
         PiData = data;
+        mainActivity.runOnUiThread(new Runnable(){
+
+            @Override
+            public void run() {
+                mainActivity.setData(PiData);
+            }
+        });
     }
 
     //subscribe to topic
