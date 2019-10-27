@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">CarTelematics</string>
+    <string name="title_datamode_list">DataModes</string>
+    <string name="title_datamode_detail">DataMode Detail</string>
+    <string name="title_activity_data_mode">DataMode</string>
 </resources>
