@@ -28,7 +28,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openCameraMode(View v){
-
+        Intent intent = new Intent(this, CameraModeActivity.class);
+        startActivity(intent);
     }
 
 }

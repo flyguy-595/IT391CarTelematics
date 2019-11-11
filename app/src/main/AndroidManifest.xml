@@ -3,6 +3,14 @@
     package="edu.ilstu.cartelematics">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <uses-feature
+        android:name="android.hardware.camera2"
+        android:required="false" />
+
+
 
     <application
         android:allowBackup="true"
@@ -11,6 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".CameraModeActivity" android:screenOrientation="landscape" android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".DataModeActivity"
             android:label="@string/title_activity_data_mode"
