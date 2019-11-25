@@ -5,6 +5,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Matrix;
@@ -18,21 +19,25 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
 import android.media.MediaRecorder;
+import android.media.projection.MediaProjection;
+import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.Surface;
+import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -58,15 +63,20 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
     private String cameraID;
     private Size videoSize;
     private Size previewSize;
-    private int ratioWidth;
-    private int ratioHeight;
     private MediaRecorder mediaRecorder;
     private HandlerThread backgroundThread;
     private Button record;
     private Button stop;
     private boolean isRecording = false;
     private String videoPath;
-    private ViewGroup viewGroup;
+    private MediaProjectionManager projectionManager;
+    private MediaProjection mediaProjection;
+    private VirtualDisplay vDisplay;
+    private Surface surface;
+    private SurfaceView surfaceView;
+    private DisplayMetrics metrics;
+
+    private int test;
 
 
     public static CameraModeVideoFragment newInstance(){
@@ -84,9 +94,19 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         record = (Button) view.findViewById(R.id.recordButton);
         stop = (Button) view.findViewById(R.id.stopButton);
         stop.setVisibility(view.GONE);
+        surfaceView = (SurfaceView) view.findViewById(R.id.surface);
+        surface = surfaceView.getHolder().getSurface();
         textureView.setOnTouchListener(touchListener);
         record.setOnClickListener(this);
         stop.setOnClickListener(this);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState){
+        super.onActivityCreated(savedInstanceState);
+        Activity activity = getActivity();
+        projectionManager = (MediaProjectionManager) activity.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+        mediaRecorder = new MediaRecorder();
     }
 
     @Override
@@ -196,7 +216,6 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
                 throw new RuntimeException("Time out waiting to lock camera opening");
             }
             configureTransform(width, height);
-            mediaRecorder = new MediaRecorder();
             manager.openCamera(cameraID, stateCallback, backgroundHandler);
         }catch(CameraAccessException e){
             e.printStackTrace();
@@ -220,10 +239,10 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
                 cameraDevice.close();
                 cameraDevice = null;
             }
-            if(mediaRecorder != null){
+            /**if(mediaRecorder != null){
                 mediaRecorder.release();
                 mediaRecorder = null;
-            }
+            }**/
         }catch(InterruptedException e){
             throw new RuntimeException("Interrupted while closing");
         }finally{
@@ -382,11 +401,101 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
 
         mediaRecorder.stop();
         mediaRecorder.reset();
+        projectionCallback.onStop();
+        vDisplay.release();
 
         videoPath = null;
         createCameraPreviewSession();
     }
 
+    /**
+    private void stopRecording() {
+        record.setVisibility(View.VISIBLE);
+        stop.setVisibility(View.GONE);
+        isRecording = false;
+
+        mediaRecorder.stop();
+        mediaRecorder.reset();
+
+        videoPath = null;
+        createCameraPreviewSession();
+    }
+     **/
+
+    private void startRecording(){
+        Activity activity = getActivity();
+        if(cameraDevice == null || !textureView.isAvailable() || previewSize == null){
+            return;
+        }
+        metrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        try {
+            setUpMediaRecorder();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        test = 1;
+        if(mediaProjection == null) {
+            startActivityForResult(projectionManager.createScreenCaptureIntent(), 1);
+        }
+        else {
+            vDisplay = mediaProjection.createVirtualDisplay("CameraMode", videoSize.getWidth(), videoSize.getHeight(), metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, surface, null, null);
+            getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        record.setVisibility(View.GONE);
+                        stop.setVisibility(View.VISIBLE);
+                        isRecording = true;
+                    }
+                });
+            }
+        mediaRecorder.start();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if(requestCode != 1){
+            System.out.println("request code error");
+            return;
+        }
+        if(resultCode != Activity.RESULT_OK){
+            System.out.println("result code error");
+            return;
+        }
+
+        /**mediaRecorder = new MediaRecorder();
+        try {
+            setUpMediaRecorder();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }**/
+
+        Activity activity = getActivity();
+        metrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        mediaProjection = projectionManager.getMediaProjection(resultCode, data);
+        mediaProjection.registerCallback(projectionCallback, null);
+        vDisplay = mediaProjection.createVirtualDisplay("CameraMode", metrics.widthPixels, metrics.heightPixels, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, surface, null, null);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println(test);
+                record.setVisibility(View.GONE);
+                stop.setVisibility(View.VISIBLE);
+                isRecording = true;
+            }
+        });
+    }
+
+    MediaProjection.Callback projectionCallback = new MediaProjection.Callback() {
+        @Override
+        public void onStop() {
+            System.out.println("here first");
+            super.onStop();
+        }
+    };
+
+    /**
     private void startRecording() {
         if(cameraDevice == null || !textureView.isAvailable() || previewSize == null){
             return;
@@ -442,6 +551,7 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
             e.printStackTrace();
         }
     }
+    **/
 
     private void setUpMediaRecorder() throws IOException {
         final Activity activity = getActivity();

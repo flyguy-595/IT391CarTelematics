@@ -4,4 +4,11 @@
     <dimen name="app_bar_height">200dp</dimen>
     <dimen name="item_width">200dp</dimen>
     <dimen name="text_margin">16dp</dimen>
+    <dimen name="fab1">55dp</dimen>
+    <dimen name="fab2">105dp</dimen>
+    <dimen name="fab3">155dp</dimen>
+    <dimen name="fab4">205dp</dimen>
+    <dimen name="fab5">255dp</dimen>
+    <dimen name="fab6">305dp</dimen>
+    <dimen name="fab_menu_margin">21dp</dimen>
 </resources>

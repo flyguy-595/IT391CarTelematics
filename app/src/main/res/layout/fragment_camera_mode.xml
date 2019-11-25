@@ -3,6 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+        <SurfaceView
+            android:id="@+id/surface"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
+    
         <edu.ilstu.cartelematics.AutoFitTextureView
             android:id="@+id/textureview"
             android:layout_width="match_parent"

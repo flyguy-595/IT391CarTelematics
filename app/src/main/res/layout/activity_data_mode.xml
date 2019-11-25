@@ -24,20 +24,258 @@
 
     <include layout="@layout/content_data_mode" />
 
+    <LinearLayout
+        android:id="@+id/item1"
+        android:layout_width="140dp"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_menu_margin">
+
+        <TextView
+            android:id="@+id/item1Text"
+            android:layout_width="95dp"
+            android:layout_height="match_parent"
+            android:text="Fuel Level"
+            android:textAlignment="viewStart"
+            android:paddingTop="7.5dp"
+            android:textSize="18dp"
+            android:textColor="@color/text"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabItem1"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            app:srcCompat="@android:drawable/ic_menu_call" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/item2"
+        android:layout_width="140dp"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_menu_margin">
+
+        <TextView
+            android:id="@+id/item2Text"
+            android:layout_width="95dp"
+            android:layout_height="match_parent"
+            android:text="RPM"
+            android:textAlignment="viewStart"
+            android:paddingTop="7.5dp"
+            android:textSize="18dp"
+            android:textColor="@color/text"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabItem2"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            app:srcCompat="@android:drawable/ic_menu_call" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/item3"
+        android:layout_width="140dp"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_menu_margin">
+
+        <TextView
+            android:id="@+id/item3Text"
+            android:layout_width="95dp"
+            android:layout_height="match_parent"
+            android:text="Speed"
+            android:textAlignment="viewStart"
+            android:paddingTop="7.5dp"
+            android:textSize="18dp"
+            android:textColor="@color/text"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabItem3"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            app:srcCompat="@android:drawable/ic_menu_call" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/item4"
+        android:layout_width="140dp"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_menu_margin">
+
+        <TextView
+            android:id="@+id/item4Text"
+            android:layout_width="95dp"
+            android:layout_height="match_parent"
+            android:text="Throttle Pos"
+            android:textAlignment="viewStart"
+            android:textSize="18dp"
+            android:textColor="@color/text"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabItem4"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            app:srcCompat="@android:drawable/ic_menu_call" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/item5"
+        android:layout_width="140dp"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_menu_margin">
+
+        <TextView
+            android:id="@+id/item5Text"
+            android:layout_width="95dp"
+            android:layout_height="match_parent"
+            android:text="Engine Time"
+            android:textAlignment="viewStart"
+            android:textSize="18dp"
+            android:textColor="@color/text"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabItem5"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            app:srcCompat="@android:drawable/ic_menu_call" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/item6"
+        android:layout_width="140dp"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_menu_margin">
+
+        <TextView
+            android:id="@+id/item6Text"
+            android:layout_width="95dp"
+            android:layout_height="match_parent"
+            android:text="Oil Temp"
+            android:textAlignment="viewStart"
+            android:paddingTop="7.5dp"
+            android:textSize="18dp"
+            android:textColor="@color/text"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabItem6"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            app:srcCompat="@android:drawable/ic_menu_call" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/item7"
+        android:layout_width="140dp"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_menu_margin">
+
+        <TextView
+            android:id="@+id/item7Text"
+            android:layout_width="95dp"
+            android:layout_height="match_parent"
+            android:text="Intake Pressure"
+            android:textAlignment="viewStart"
+            android:textSize="18dp"
+            android:textColor="@color/text"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabItem7"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            app:srcCompat="@android:drawable/ic_menu_call" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/item8"
+        android:layout_width="140dp"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_menu_margin">
+
+        <TextView
+            android:id="@+id/item8Text"
+            android:layout_width="95dp"
+            android:layout_height="match_parent"
+            android:text="Trouble Codes"
+            android:textAlignment="viewStart"
+            android:textSize="18dp"
+            android:textColor="@color/text"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabItem8"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            app:srcCompat="@android:drawable/ic_menu_call" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/item9"
+        android:layout_width="140dp"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_menu_margin">
+
+        <TextView
+            android:id="@+id/item9Text"
+            android:layout_width="95dp"
+            android:layout_height="match_parent"
+            android:text="Fuel Rate"
+            android:textAlignment="viewStart"
+            android:paddingTop="7.5dp"
+            android:textSize="18dp"
+            android:textColor="@color/text"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabItem9"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            app:srcCompat="@android:drawable/ic_menu_call" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/itemNextPage"
+        android:layout_width="140dp"
+        android:layout_height="45dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_menu_margin">
+
+        <TextView
+            android:id="@+id/itemNextPageText"
+            android:layout_width="95dp"
+            android:layout_height="match_parent"
+            android:text="Next Page"
+            android:textAlignment="viewStart"
+            android:paddingTop="7.5dp"
+            android:textSize="18dp"
+            android:textColor="@color/text"
+            android:visibility="invisible"/>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabItemNextPage"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            app:srcCompat="@android:drawable/ic_menu_call" />
+    </LinearLayout>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/fab_main"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@android:drawable/ic_menu_add" />
-
-    <menu
-        android:id="@+id/menu">
-        <item android:id="@+id/test"
-            android:title="@string/test" />
-        <item android:id="@+id/test2"
-            android:title="@string/test2" />
-    </menu>
+        app:srcCompat="@drawable/ic_fab_plus" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
