@@ -13,8 +13,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        AWSConnection connection = new AWSConnection(this);
-        connection.AWSConnect();
+        //AWSConnection connection = new AWSConnection(this);
+        //connection.AWSConnect();
     }
 
     public void setData(String data) {

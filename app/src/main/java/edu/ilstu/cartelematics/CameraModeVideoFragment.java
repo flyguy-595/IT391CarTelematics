@@ -2,12 +2,14 @@ package edu.ilstu.cartelematics;
 
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
@@ -32,15 +34,16 @@ import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.Surface;
-import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,43 +75,68 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
     private MediaProjectionManager projectionManager;
     private MediaProjection mediaProjection;
     private VirtualDisplay vDisplay;
-    private Surface surface;
-    private SurfaceView surfaceView;
     private DisplayMetrics metrics;
-
-    private int test;
+    private int resultCode;
+    private Intent resultData;
+    Intent projectionIntent;
+    private TextView mph;
 
 
     public static CameraModeVideoFragment newInstance(){
         return new CameraModeVideoFragment();
     }
 
+    /** overlays the fragment on top of the activity **/
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         return inflater.inflate(R.layout.fragment_camera_mode, container, false);
     }
 
+    /** Gets all the items in the view and sets them to objects. Also sets there action listeners **/
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState){
         textureView = (AutoFitTextureView) view.findViewById(R.id.textureview);
+        mph = (TextView) view.findViewById(R.id.mph);
+        mph.setShadowLayer(16, 0, 0, Color.BLACK);
         record = (Button) view.findViewById(R.id.recordButton);
         stop = (Button) view.findViewById(R.id.stopButton);
         stop.setVisibility(view.GONE);
-        surfaceView = (SurfaceView) view.findViewById(R.id.surface);
-        surface = surfaceView.getHolder().getSurface();
         textureView.setOnTouchListener(touchListener);
         record.setOnClickListener(this);
         stop.setOnClickListener(this);
     }
 
+    /** Runs when fragment starts **/
     @Override
     public void onActivityCreated(Bundle savedInstanceState){
         super.onActivityCreated(savedInstanceState);
         Activity activity = getActivity();
         projectionManager = (MediaProjectionManager) activity.getSystemService(Context.MEDIA_PROJECTION_SERVICE);
         mediaRecorder = new MediaRecorder();
+        callForegroundService();
     }
 
+    /** When you close the fragment it runs endForegroundService to stop the notification **/
+    @Override
+    public void onDestroy(){
+        endForegroundService();
+        super.onDestroy();
+    }
+
+    /** Only used for Android 8 and above. Required for Android 10 due to enhanced security **/
+    @TargetApi(26)
+    private void callForegroundService(){
+        projectionIntent = new Intent(getActivity(), MediaProjectionService.class);
+        ContextCompat.startForegroundService(getActivity(), projectionIntent);
+    }
+
+    /** Ends foreground service for media projection when you close the app. Only used for Android 8 and above. **/
+    @TargetApi(26)
+    private void endForegroundService(){
+        getActivity().stopService(projectionIntent);
+    }
+
+    /** Resumes the viewfinder after going back into the app **/
     @Override
     public void onResume(){
         super.onResume();
@@ -120,8 +148,10 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         }else{
             textureView.setSurfaceTextureListener(surfaceTextureListener);
         }
+        callForegroundService();
     }
 
+    /** Pauses the app when you leave it without closing **/
     @Override
     public void onPause(){
         closeCamera();
@@ -133,11 +163,11 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         }catch(InterruptedException e){
             e.printStackTrace();
         }
+        endForegroundService();
         super.onPause();
     }
 
-    //textureView is the loaded when the activity is started.
-    //this listens for that and starts the camera.
+    /** Once the textureview is loaded in, it starts the camera view finder **/
     private final TextureView.SurfaceTextureListener surfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -160,6 +190,7 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         }
     };
 
+    /** Touch listener for making the record and stop recording buttons disappear when you touch the screen **/
     private OnTouchListener touchListener = new OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -182,6 +213,7 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         }
     };
 
+    /** Reconfigures the viewfinder when the textureview changes size **/
     private void configureTransform(int width, int height) {
         if(null == textureView || null ==  previewSize){
             return;
@@ -201,6 +233,7 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         textureView.setTransform(matrix);
     }
 
+    /** Sets up and opens the camera **/
     private void openCamera(int width, int height) {
         final Activity activity = getActivity();
         if(ActivityCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
@@ -224,10 +257,12 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         }
     }
 
+    /** Requests permissions for using the camera and recording audio, popups appear on the users screen for them to accept **/
     private void getPermissions() {
         requestPermissions(new String[] {Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO}, 1);
     }
 
+    /** Closes the camera **/
     private void closeCamera() {
         try{
             cameraOpenCloseLock.acquire();
@@ -239,10 +274,6 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
                 cameraDevice.close();
                 cameraDevice = null;
             }
-            /**if(mediaRecorder != null){
-                mediaRecorder.release();
-                mediaRecorder = null;
-            }**/
         }catch(InterruptedException e){
             throw new RuntimeException("Interrupted while closing");
         }finally{
@@ -250,9 +281,12 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         }
     }
 
+    /** Gets which camera is being used (front or back) and maps it to the texture view **/
     private void setUpCameraOutputs(int width, int height) {
         final Activity activity = getActivity();
         CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+        metrics = new DisplayMetrics();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
         try{
             for(String cameraID : manager.getCameraIdList()){
                 CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraID);
@@ -269,7 +303,8 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
 
                 int orientation = getResources().getConfiguration().orientation;
                 if(orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    textureView.setAspectRatio(previewSize.getWidth(), previewSize.getHeight());
+                    //textureView.setAspectRatio(previewSize.getWidth(), previewSize.getHeight());
+                    textureView.setAspectRatio(metrics.widthPixels, metrics.heightPixels);
                 }else{
                     textureView.setAspectRatio(previewSize.getHeight(), previewSize.getWidth());
                 }
@@ -281,6 +316,7 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         }
     }
 
+    /** Calculates the Optimal size for the view finder **/
     private Size chooseOptimalSize(Size[] outputSizes, int width, int height, Size videoSize) {
         List<Size> bigEnough = new ArrayList<>();
         int w = videoSize.getWidth();
@@ -298,6 +334,7 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         }
     }
 
+    /** Calculates the size of the video to scale to 1080p **/
     private Size chooseVideoSize(Size[] outputSizes) {
         for (Size size : outputSizes){
 
@@ -309,7 +346,7 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         return outputSizes[outputSizes.length - 1];
     }
 
-    //controls opening, closing, and if the camera has and error
+    /** controls opening, closing, and if the camera has and error **/
     private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
         @Override
         public void onOpened(@NonNull CameraDevice camera) {
@@ -335,6 +372,7 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         }
     };
 
+    /** Take the mapped texture view, creates a surface and starts the session**/
     private void createCameraPreviewSession() {
         try{
             SurfaceTexture texture = textureView.getSurfaceTexture();
@@ -377,13 +415,14 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         }
     }
 
-    private void closePreviewSession() {
-        if(captureSession != null){
-            captureSession.close();
-            captureSession = null;
-        }
-    }
+    /**private void closePreviewSession() {
+     if(captureSession != null){
+     captureSession.close();
+     captureSession = null;
+     }
+     }**/
 
+    /** Starts or stops the recording when the start or stop buttons are pressed **/
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.recordButton){
@@ -394,6 +433,7 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         }
     }
 
+    /** Stops recording, closes and resets everything **/
     private void stopRecording() {
         record.setVisibility(View.VISIBLE);
         stop.setVisibility(View.GONE);
@@ -401,27 +441,14 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
 
         mediaRecorder.stop();
         mediaRecorder.reset();
-        projectionCallback.onStop();
         vDisplay.release();
+        mediaProjection.stop();
 
         videoPath = null;
         createCameraPreviewSession();
     }
 
-    /**
-    private void stopRecording() {
-        record.setVisibility(View.VISIBLE);
-        stop.setVisibility(View.GONE);
-        isRecording = false;
-
-        mediaRecorder.stop();
-        mediaRecorder.reset();
-
-        videoPath = null;
-        createCameraPreviewSession();
-    }
-     **/
-
+    /** Starts the media projection which captures the screen with all UI elements and viewfinder and starts recording **/
     private void startRecording(){
         Activity activity = getActivity();
         if(cameraDevice == null || !textureView.isAvailable() || previewSize == null){
@@ -434,24 +461,33 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         } catch (IOException e) {
             e.printStackTrace();
         }
-        test = 1;
         if(mediaProjection == null) {
             startActivityForResult(projectionManager.createScreenCaptureIntent(), 1);
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    record.setVisibility(View.GONE);
+                    stop.setVisibility(View.VISIBLE);
+                    isRecording = true;
+                    mediaRecorder.start();
+                }
+            });
         }
         else {
-            vDisplay = mediaProjection.createVirtualDisplay("CameraMode", videoSize.getWidth(), videoSize.getHeight(), metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, surface, null, null);
+            vDisplay = mediaProjection.createVirtualDisplay("CameraMode", videoSize.getWidth(), videoSize.getHeight(), metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, mediaRecorder.getSurface(), null, null);
             getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        record.setVisibility(View.GONE);
-                        stop.setVisibility(View.VISIBLE);
-                        isRecording = true;
-                    }
-                });
-            }
-        mediaRecorder.start();
+                @Override
+                public void run() {
+                    record.setVisibility(View.GONE);
+                    stop.setVisibility(View.VISIBLE);
+                    isRecording = true;
+                    mediaRecorder.start();
+                }
+            });
+        }
     }
 
+    /** Used to start a media projection **/
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         if(requestCode != 1){
@@ -463,96 +499,27 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
             return;
         }
 
-        /**mediaRecorder = new MediaRecorder();
-        try {
-            setUpMediaRecorder();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }**/
-
-        Activity activity = getActivity();
-        metrics = new DisplayMetrics();
-        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        mediaProjection = projectionManager.getMediaProjection(resultCode, data);
-        mediaProjection.registerCallback(projectionCallback, null);
-        vDisplay = mediaProjection.createVirtualDisplay("CameraMode", metrics.widthPixels, metrics.heightPixels, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, surface, null, null);
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println(test);
-                record.setVisibility(View.GONE);
-                stop.setVisibility(View.VISIBLE);
-                isRecording = true;
-            }
-        });
+        this.resultCode = resultCode;
+        resultData = data;
+        setUpMediaProjection();
+        //mediaProjection.registerCallback(projectionCallback, null);
+        setUpVDisplay();
     }
 
-    MediaProjection.Callback projectionCallback = new MediaProjection.Callback() {
-        @Override
-        public void onStop() {
-            System.out.println("here first");
-            super.onStop();
-        }
-    };
-
-    /**
-    private void startRecording() {
-        if(cameraDevice == null || !textureView.isAvailable() || previewSize == null){
-            return;
-        }
-        try{
-            closePreviewSession();
-            setUpMediaRecorder();
-            SurfaceTexture texture = textureView.getSurfaceTexture();
-            assert texture != null;
-            texture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
-            previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
-            List<Surface> surfaces = new ArrayList<>();
-            Surface previewSurface = new Surface(texture);
-            surfaces.add(previewSurface);
-            previewRequestBuilder.addTarget(previewSurface);
-            Surface recorderSurface = mediaRecorder.getSurface();
-            surfaces.add(recorderSurface);
-            previewRequestBuilder.addTarget(recorderSurface);
-
-            cameraDevice.createCaptureSession(surfaces, new CameraCaptureSession.StateCallback(){
-
-                @Override
-                public void onConfigured(@NonNull CameraCaptureSession session){
-                    captureSession = session;
-                    if(cameraDevice == null){
-                        return;
-                    }
-                    try{
-                        previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-                        HandlerThread thread = new HandlerThread("CameraPreview");
-                        thread.start();
-                        captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, backgroundHandler);
-                    }catch (CameraAccessException e){
-                        e.printStackTrace();
-                    }
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            record.setVisibility(View.GONE);
-                            stop.setVisibility(View.VISIBLE);
-                            isRecording = true;
-                            mediaRecorder.start();
-                        }
-                    });
-                }
-
-                @Override
-                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-                    System.out.println("Failed");
-                }
-            }, backgroundHandler);
-        }catch(CameraAccessException | IOException e){
-            e.printStackTrace();
-        }
+    /** Contains one line which starts the media projection.
+     *  This is needed because if you call this inside onActivityResult mediaProjection will be null **/
+    private void setUpMediaProjection(){
+        mediaProjection = projectionManager.getMediaProjection(resultCode, resultData);
     }
-    **/
 
+    /** This sets up the virual display which is basically an invisible layer on top of the screen
+     *  used as a target for the recording.
+     *  This is here for the same reason media projection is split up.**/
+    private void setUpVDisplay(){
+        vDisplay = mediaProjection.createVirtualDisplay("CameraMode", metrics.widthPixels, metrics.heightPixels, metrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, mediaRecorder.getSurface(), null, null);
+    }
+
+    /** Configures the media recorder including, audio source, format, encoding, save file path, bitrate, video size, etc. **/
     private void setUpMediaRecorder() throws IOException {
         final Activity activity = getActivity();
         if(activity == null){
@@ -568,7 +535,7 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         mediaRecorder.setOutputFile(videoPath);
         mediaRecorder.setVideoEncodingBitRate(10000000);
         mediaRecorder.setVideoFrameRate(30);
-        mediaRecorder.setVideoSize(videoSize.getWidth(), videoSize.getHeight());
+        mediaRecorder.setVideoSize(metrics.widthPixels, metrics.heightPixels);
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         System.out.println("Recording Video to: " +  videoPath);
@@ -576,6 +543,7 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         mediaRecorder.prepare();
     }
 
+    /** Comparator class used to compare sizes used to get view finder size **/
     static class CompareSizesByArea implements Comparator<Size> {
 
         @Override

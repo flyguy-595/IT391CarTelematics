@@ -3,45 +3,52 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-        <SurfaceView
-            android:id="@+id/surface"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"/>
-    
-        <edu.ilstu.cartelematics.AutoFitTextureView
+    <edu.ilstu.cartelematics.AutoFitTextureView
             android:id="@+id/textureview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"/>
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-            <Button
-                android:id="@+id/recordButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center|bottom"
-                android:drawableStart="@android:drawable/ic_media_play"
-                android:text="Start Recording"
-                android:layout_margin="16dp"
-                android:background="@color/colorStart"
-                android:padding="4dp"
-                android:paddingEnd="10dp"/>
+        <TextView
+            android:id="@+id/mph"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|top"
+            android:layout_margin="16dp"
+            android:fontFamily="sans-serif-condensed-medium"
+            android:text="0 MPH"
+            android:textColor="#FFFFFF"
+            android:textSize="128px" />
 
-            <Button
-                android:id="@+id/stopButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center|bottom"
-                android:drawableStart="@android:drawable/ic_media_pause"
-                android:text="Stop Recording"
-                android:layout_margin="16dp"
-                android:background="@color/colorStop"
-                android:padding="4dp"
-                android:paddingEnd="10dp"/>
-        </FrameLayout>
+        <Button
+            android:id="@+id/recordButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|bottom"
+            android:layout_margin="16dp"
+            android:background="@color/colorStart"
+            android:drawableStart="@android:drawable/ic_media_play"
+            android:padding="4dp"
+            android:paddingEnd="10dp"
+            android:text="Start Recording" />
+
+        <Button
+            android:id="@+id/stopButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|bottom"
+            android:layout_margin="16dp"
+            android:background="@color/colorStop"
+            android:drawableStart="@android:drawable/ic_media_pause"
+            android:padding="4dp"
+            android:paddingEnd="10dp"
+            android:text="Stop Recording" />
+
+    </FrameLayout>
+
 </RelativeLayout>
