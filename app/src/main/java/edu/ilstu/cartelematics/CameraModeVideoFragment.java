@@ -26,6 +26,7 @@ import android.hardware.display.VirtualDisplay;
 import android.media.MediaRecorder;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -104,6 +105,31 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         textureView.setOnTouchListener(touchListener);
         record.setOnClickListener(this);
         stop.setOnClickListener(this);
+        IoT.Connect(getActivity());
+    }
+
+    /** Runs when the fragment is created. contains thread for which the UI is updated from when new IoT information comes in **/
+    @Override
+    public void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mph.setText(IoT.getMph());
+                        }
+                    });
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 
     /** Runs when fragment starts **/
@@ -120,6 +146,15 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
     @Override
     public void onDestroy(){
         endForegroundService();
+        closeCamera();
+        backgroundThread.quitSafely();
+        try{
+            backgroundThread.join();
+            backgroundThread = null;
+            backgroundHandler = null;
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
         super.onDestroy();
     }
 
@@ -365,8 +400,10 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
         @Override
         public void onError(@NonNull CameraDevice camera, int error) {
             cameraOpenCloseLock.release();
-            cameraDevice.close();
-            cameraDevice = null;
+            if(cameraDevice != null) {
+                cameraDevice.close();
+                cameraDevice = null;
+            }
             Activity activity = getActivity();
             activity.finish();
         }

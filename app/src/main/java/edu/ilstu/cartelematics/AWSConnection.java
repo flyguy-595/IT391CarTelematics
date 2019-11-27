@@ -12,16 +12,18 @@ import com.amazonaws.mobileconnectors.iot.AWSIotMqttQos;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.iot.AWSIotClient;
+import com.amazonaws.services.iot.model.AttachPolicyRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateRequest;
 import com.amazonaws.services.iot.model.CreateKeysAndCertificateResult;
 
 import java.security.KeyStore;
+import java.util.StringTokenizer;
 import java.util.UUID;
 
 public class AWSConnection {
 
     static final String LOG_TAG = AWSConnection.class.getCanonicalName();
-    private static String PiData = "";
+    private static String[] PiData = new String[9];
     private AWSIotClient iotClient;
     private KeyStore clientKeyStore;
     private String keystorePath;
@@ -29,11 +31,22 @@ public class AWSConnection {
     private String keystorePassword;
     private String certificateId;
     private AWSIotMqttManager mqtt;
-    private MainActivity mainActivity;
+    private CameraModeActivity cameraModeActivity;
     private Context context;
+    private StringTokenizer tokenizer;
+    private int mode;
 
-    public AWSConnection(Context context){
-        mainActivity = (MainActivity) context;
+    public static AWSConnection newInstance(Context context){
+        return new AWSConnection(context);
+    }
+
+    private AWSConnection(Context context){
+        if(context == (CameraModeActivity) context){
+            cameraModeActivity = (CameraModeActivity) context;
+            mode = 2;
+        }else if(context == (DataModeActivity) context){
+            mode = 1;
+        }
         this.context = context;
     }
 
@@ -67,7 +80,7 @@ public class AWSConnection {
                 if (AWSIotKeystoreHelper.keystoreContainsAlias(certificateId, keystorePath,
                         keystoreName, keystorePassword)) {
                     Log.i(LOG_TAG, "Certificate " + certificateId
-                            + " found in keystore - using for MQTT.");
+                            + " found in keystore - using for MQTT. ");
                     // load keystore from file into memory to pass on connection
                     clientKeyStore = AWSIotKeystoreHelper.getIotKeystore(certificateId,
                             keystorePath, keystoreName, keystorePassword);
@@ -116,6 +129,15 @@ public class AWSConnection {
                         // connection
                         clientKeyStore = AWSIotKeystoreHelper.getIotKeystore(certificateId,
                                 keystorePath, keystoreName, keystorePassword);
+
+                        // Attach a policy to the newly created certificate.
+                        // This flow assumes the policy was already created in
+                        // AWS IoT and we are now just attaching it to the
+                        // certificate.
+                        AttachPolicyRequest policyAttachRequest = new AttachPolicyRequest();
+                        policyAttachRequest.setPolicyName("telemetry_policy");
+                        policyAttachRequest.setTarget(createKeysAndCertificateResult.getCertificateArn());
+                        iotClient.attachPolicy(policyAttachRequest);
                         try {
                             if (clientKeyStore != null) {
                                 subscribeToTopic();
@@ -136,14 +158,13 @@ public class AWSConnection {
 
     // used for updating the PiData variable inside the onMessageArrived method so AWSConnect and return the data
     private void updateData(String data){
-        PiData = data;
-        mainActivity.runOnUiThread(new Runnable(){
-
-            @Override
-            public void run() {
-                mainActivity.setData(PiData);
-            }
-        });
+        tokenizer = new StringTokenizer(data, ",");
+        int i = 0;
+        while(tokenizer.hasMoreTokens()){
+            PiData[i] = tokenizer.nextToken();
+            i++;
+        }
+        IoT.setData(PiData);
     }
 
     //subscribe to topic
