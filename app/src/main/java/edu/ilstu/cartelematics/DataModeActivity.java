@@ -1,5 +1,6 @@
 package edu.ilstu.cartelematics;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -14,16 +15,24 @@ import androidx.appcompat.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.ActionMode;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 public class DataModeActivity extends AppCompatActivity {
 
@@ -38,8 +47,15 @@ public class DataModeActivity extends AppCompatActivity {
     private FloatingActionButton fab8;
     private FloatingActionButton fab9;
     private FloatingActionButton nextPage;
-    boolean fabMenuOpen = false;
-    int fabPage = 1;
+    private boolean fabMenuOpen = false;
+    private int fabPage = 1;
+    private ArrayList<String> stringList = new ArrayList<String>();
+    private ListView listView;
+    private ArrayAdapter arrayAdapter;
+    private String[] values = {"" , "", "", "", "", "", "", "", ""};
+    private String[] valuesIoT = {"" , "", "", "", "", "", "", "", "", ""};
+    private boolean[] active = {false, false, false, false, false, false, false, false, false};
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +81,101 @@ public class DataModeActivity extends AppCompatActivity {
                 cycleFabPage();
             }
         });
+        fab1 = findViewById(R.id.fabItem1);
+        fab1.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                buttonPressed(0);
+            }
+        });
+        fab2 = findViewById(R.id.fabItem2);
+        fab2.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                buttonPressed(1);
+            }
+        });
+        fab3 = findViewById(R.id.fabItem3);
+        fab3.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                buttonPressed(2);
+            }
+        });
+        fab4 = findViewById(R.id.fabItem4);
+        fab4.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                buttonPressed(3);
+            }
+        });
+        fab5 = findViewById(R.id.fabItem5);
+        fab5.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                buttonPressed(4);
+            }
+        });
+        fab6 = findViewById(R.id.fabItem6);
+        fab6.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                buttonPressed(5);
+            }
+        });
+        fab7 = findViewById(R.id.fabItem7);
+        fab7.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                buttonPressed(6);
+            }
+        });
+        fab8 = findViewById(R.id.fabItem8);
+        fab8.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                buttonPressed(7);
+            }
+        });
+        fab9 = findViewById(R.id.fabItem9);
+        fab9.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                buttonPressed(8);
+            }
+        });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        arrayAdapter = new ArrayAdapter<String>(this, R.layout.activity_listview, stringList);
+        listView = findViewById(R.id.listView);
+        listView.setAdapter(arrayAdapter);
+
+        IoT.Connect(this);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            valuesIoT = IoT.getData();
+                            for(int i = 0; i < 9; i++){
+                                if(active[i]){
+                                    updateItem(values[i], valuesIoT[i+1]);
+                                    values[i] = valuesIoT[i+1];
+                                }
+                            }
+                        }
+                    });
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 
     private void closeFabMenu(){
@@ -137,6 +247,25 @@ public class DataModeActivity extends AppCompatActivity {
         TextView textView = findViewById(text);
         textView.setVisibility(View.INVISIBLE);
         linearLayout.animate().translationY(0);
+    }
+
+    private void updateItem(String item, String newValue){
+        int index = stringList.indexOf(item);
+        stringList.set(index, newValue);
+        arrayAdapter.notifyDataSetChanged();
+    }
+
+    private void buttonPressed(int value){
+        if(!active[value]){
+            stringList.add(values[value]);
+            arrayAdapter.notifyDataSetChanged();
+            active[value] = true;
+        }
+        else{
+            stringList.remove(values[value]);
+            arrayAdapter.notifyDataSetChanged();
+            active[value] = false;
+        }
     }
 
 }

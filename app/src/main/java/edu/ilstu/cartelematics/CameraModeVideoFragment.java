@@ -588,6 +588,4 @@ public class CameraModeVideoFragment extends Fragment implements View.OnClickLis
             return Long.signum((long) o1.getWidth() * o1.getHeight() - (long) o2.getWidth() * o2.getHeight());
         }
     }
-
-
 }

@@ -31,4 +31,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     implementation 'com.amazonaws:aws-android-sdk-iot:2.+'
     implementation 'com.amazonaws:aws-android-sdk-core:2.+'
+    implementation 'androidx.cardview:cardview:1.0.0'
 }

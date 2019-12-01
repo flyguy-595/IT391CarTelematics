@@ -23,7 +23,7 @@ import java.util.UUID;
 public class AWSConnection {
 
     static final String LOG_TAG = AWSConnection.class.getCanonicalName();
-    private static String[] PiData = new String[9];
+    private static String[] PiData = new String[10];
     private AWSIotClient iotClient;
     private KeyStore clientKeyStore;
     private String keystorePath;
@@ -32,6 +32,7 @@ public class AWSConnection {
     private String certificateId;
     private AWSIotMqttManager mqtt;
     private CameraModeActivity cameraModeActivity;
+    private DataModeActivity dataModeActivity;
     private Context context;
     private StringTokenizer tokenizer;
     private int mode;
@@ -41,10 +42,11 @@ public class AWSConnection {
     }
 
     private AWSConnection(Context context){
-        if(context == (CameraModeActivity) context){
+        if(context instanceof CameraModeActivity){
             cameraModeActivity = (CameraModeActivity) context;
             mode = 2;
-        }else if(context == (DataModeActivity) context){
+        }else if(context instanceof DataModeActivity){
+            dataModeActivity = (DataModeActivity) context;
             mode = 1;
         }
         this.context = context;

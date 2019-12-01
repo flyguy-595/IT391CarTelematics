@@ -6,7 +6,7 @@ import android.widget.TextView;
 public class IoT {
 
     private static AWSConnection connection;
-    private static String[] data = {"", "", "", "", "", "", "", "", ""};
+    private static String[] data = {"", "", "", "", "", "", "", "", "", ""};
 
     public static void Connect(Context activityContext){
         connection = AWSConnection.newInstance(activityContext);
@@ -18,7 +18,10 @@ public class IoT {
     }
 
     public static String getMph(){
-        return data[2];
+        return data[3];
     }
 
+    public static String[] getData(){
+        return data;
+    }
 }
