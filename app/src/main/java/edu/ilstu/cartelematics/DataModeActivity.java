@@ -43,18 +43,15 @@ public class DataModeActivity extends AppCompatActivity {
     private FloatingActionButton fab4;
     private FloatingActionButton fab5;
     private FloatingActionButton fab6;
-    private FloatingActionButton fab7;
-    private FloatingActionButton fab8;
-    private FloatingActionButton fab9;
     private FloatingActionButton nextPage;
     private boolean fabMenuOpen = false;
     private int fabPage = 1;
     private ArrayList<String> stringList = new ArrayList<String>();
     private ListView listView;
     private ArrayAdapter arrayAdapter;
-    private String[] values = {"" , "", "", "", "", "", "", "", ""};
-    private String[] valuesIoT = {"" , "", "", "", "", "", "", "", "", ""};
-    private boolean[] active = {false, false, false, false, false, false, false, false, false};
+    private String[] values = {"" , "", "", "", "", ""};
+    private String[] valuesIoT = {"" , "", "", "", "", "", ""};
+    private boolean[] active = {false, false, false, false, false, false};
 
 
     @Override
@@ -123,27 +120,6 @@ public class DataModeActivity extends AppCompatActivity {
                 buttonPressed(5);
             }
         });
-        fab7 = findViewById(R.id.fabItem7);
-        fab7.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                buttonPressed(6);
-            }
-        });
-        fab8 = findViewById(R.id.fabItem8);
-        fab8.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                buttonPressed(7);
-            }
-        });
-        fab9 = findViewById(R.id.fabItem9);
-        fab9.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v) {
-                buttonPressed(8);
-            }
-        });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         arrayAdapter = new ArrayAdapter<String>(this, R.layout.activity_listview, stringList);
@@ -160,7 +136,7 @@ public class DataModeActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             valuesIoT = IoT.getData();
-                            for(int i = 0; i < 9; i++){
+                            for(int i = 0; i < 6; i++){
                                 if(active[i]){
                                     updateItem(values[i], valuesIoT[i+1]);
                                     values[i] = valuesIoT[i+1];
@@ -186,9 +162,6 @@ public class DataModeActivity extends AppCompatActivity {
         closeItem(R.id.item4, R.id.item4Text);
         closeItem(R.id.item5, R.id.item5Text);
         closeItem(R.id.item6, R.id.item6Text);
-        closeItem(R.id.item7, R.id.item7Text);
-        closeItem(R.id.item8, R.id.item8Text);
-        closeItem(R.id.item9, R.id.item9Text);
         closeItem(R.id.itemNextPage, R.id.itemNextPageText);
         fabPage = 1;
     }
@@ -198,9 +171,7 @@ public class DataModeActivity extends AppCompatActivity {
         openItem(R.id.item1, R.id.item1Text, R.dimen.fab1);
         openItem(R.id.item2, R.id.item2Text, R.dimen.fab2);
         openItem(R.id.item3, R.id.item3Text, R.dimen.fab3);
-        openItem(R.id.item4, R.id.item4Text, R.dimen.fab4);
-        openItem(R.id.item5, R.id.item5Text, R.dimen.fab5);
-        openItem(R.id.itemNextPage, R.id.itemNextPageText, R.dimen.fab6);
+        openItem(R.id.itemNextPage, R.id.itemNextPageText, R.dimen.fab4);
     }
 
     private void cycleFabPage(){
@@ -208,29 +179,23 @@ public class DataModeActivity extends AppCompatActivity {
             closeItem(R.id.item1, R.id.item1Text);
             closeItem(R.id.item2, R.id.item2Text);
             closeItem(R.id.item3, R.id.item3Text);
-            closeItem(R.id.item4, R.id.item4Text);
-            closeItem(R.id.item5, R.id.item5Text);
             closeItem(R.id.itemNextPage, R.id.itemNextPageText);
 
-            openItem(R.id.item6, R.id.item6Text, R.dimen.fab1);
-            openItem(R.id.item7, R.id.item7Text, R.dimen.fab2);
-            openItem(R.id.item8, R.id.item8Text, R.dimen.fab3);
-            openItem(R.id.item9, R.id.item9Text, R.dimen.fab4);
-            openItem(R.id.itemNextPage, R.id.itemNextPageText, R.dimen.fab5);
+            openItem(R.id.item4, R.id.item4Text, R.dimen.fab1);
+            openItem(R.id.item5, R.id.item5Text, R.dimen.fab2);
+            openItem(R.id.item6, R.id.item6Text, R.dimen.fab3);
+            openItem(R.id.itemNextPage, R.id.itemNextPageText, R.dimen.fab4);
             fabPage = 2;
         }else{
+            closeItem(R.id.item4, R.id.item4Text);
+            closeItem(R.id.item5, R.id.item5Text);
             closeItem(R.id.item6, R.id.item6Text);
-            closeItem(R.id.item7, R.id.item7Text);
-            closeItem(R.id.item8, R.id.item8Text);
-            closeItem(R.id.item9, R.id.item9Text);
             closeItem(R.id.itemNextPage, R.id.itemNextPageText);
 
             openItem(R.id.item1, R.id.item1Text, R.dimen.fab1);
             openItem(R.id.item2, R.id.item2Text, R.dimen.fab2);
             openItem(R.id.item3, R.id.item3Text, R.dimen.fab3);
-            openItem(R.id.item4, R.id.item4Text, R.dimen.fab4);
-            openItem(R.id.item5, R.id.item5Text, R.dimen.fab5);
-            openItem(R.id.itemNextPage, R.id.itemNextPageText, R.dimen.fab6);
+            openItem(R.id.itemNextPage, R.id.itemNextPageText, R.dimen.fab4);
             fabPage = 1;
         }
     }

@@ -3,8 +3,13 @@
     <string name="title_datamode_list">DataModes</string>
     <string name="title_datamode_detail">DataMode Detail</string>
     <string name="title_activity_data_mode">Data Display Mode</string>
-    <string name="item1">Test</string>
-    <string name="item2">Test2</string>
+    <string name="item1">Fuel Level</string>
+    <string name="item2">RPM</string>
+    <string name="item3">Speed</string>
+    <string name="item4">Throttle Pos</string>
+    <string name="item5">Engine Time</string>
+    <string name="item6">Trouble Codes</string>
+    <string name="next_page">Next Page</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

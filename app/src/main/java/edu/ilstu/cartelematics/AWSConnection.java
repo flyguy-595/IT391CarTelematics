@@ -23,7 +23,7 @@ import java.util.UUID;
 public class AWSConnection {
 
     static final String LOG_TAG = AWSConnection.class.getCanonicalName();
-    private static String[] PiData = new String[10];
+    private static String[] PiData = new String[7];
     private AWSIotClient iotClient;
     private KeyStore clientKeyStore;
     private String keystorePath;

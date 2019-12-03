@@ -6,7 +6,7 @@ import android.widget.TextView;
 public class IoT {
 
     private static AWSConnection connection;
-    private static String[] data = {"", "", "", "", "", "", "", "", "", ""};
+    private static String[] data = {"", "", "", "", "", "", ""};
 
     public static void Connect(Context activityContext){
         connection = AWSConnection.newInstance(activityContext);
